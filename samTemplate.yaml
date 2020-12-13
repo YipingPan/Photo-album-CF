@@ -21,12 +21,12 @@ Resources:
         Variables:
           REGION: us-east-1
       Events:
-        API Photo Search:
+        APIPhotoSearch:
           Type: Api
           Properties:
             Path: /search
             Method: get
-        API Photo Search:
+        APIPhotoSearch:
           Type: Api
           Properties:
             Path: /upload
