@@ -34,7 +34,7 @@ Parameters:
     Default: "Yiping"
 
 Resources:
-  cf-AdminRole:
+  cfAdminRole:
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
@@ -66,7 +66,7 @@ Resources:
   LFPipeline:
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
-      RoleArn: !GetAtt cf-AdminRole.Arn
+      RoleArn: !GetAtt cfAdminRole.Arn
       ArtifactStore:
         Type: S3
         Location: !Ref cf-S3ForArtifact
@@ -121,7 +121,7 @@ Resources:
                 ActionMode: CHANGE_SET_REPLACE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 ChangeSetName: "CC-hw3changeset"
-                RoleArn: !GetAtt cf-AdminRole.Arn
+                RoleArn: !GetAtt cfAdminRole.Arn
                 StackName: "cf-substack-for-pipeline"
                 TemplatePath: BuildArtifact::outputsamtemplate.yml  
               OutputArtifacts: []
@@ -133,7 +133,7 @@ Resources:
   S3Pipeline:
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
-      RoleArn: !GetAtt cf-AdminRole.Arn
+      RoleArn: !GetAtt cfAdminRole.Arn
       ArtifactStore:
         Type: S3
         Location: !Ref cf-S3ForArtifact
