@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: CF pipeline content for lambda
+Resources:
+  cf-hw3-photo-bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: cf-hw3-photo-bucket
+  cf_search-photos:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: cf_search-photos
+      Handler: cf_search-photos.lambda_handler
+      Runtime: python3.6
+      CodeUri: ./lambda_functions
+      Description: 'Lambda function 2 in hw3'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::718067391563:role/cf-LF-admin'
+      Environment:
+        Variables:
+          REGION: us-east-1
+      Events:
+        API Photo Search:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: get
+        API Photo Search:
+          Type: Api
+          Properties:
+            Path: /upload
+            Method: put
+  cf_hw3_lf1:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: cf_hw3_lf1
+      Handler: cf_hw3_lf1.lambda_handler
+      Runtime: python3.6
+      CodeUri: ./lambda_functions
+      Description: 'Lambda function 1 in hw3'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::718067391563:role/cf-LF-admin'
+      Events:
+        S3Trigger:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: cf-hw3-photo-bucket
+            Events: s3:ObjectCreated:Put
+      Environment:
+        Variables:
+          REGION: us-east-1

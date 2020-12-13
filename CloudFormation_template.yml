@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+
+  LFGHRepo:
+    Type: String
+    Default: "Photo-album-CF"
+
+  LFGHBranch:
+    Type: String
+    Default: "main"
+
+  LFGHToken:
+    Type: String
+    Default: "abc"
+
+  LFGHUser:
+    Type: String
+    Default: "YipingPan"
+
+  S3GHRepo:
+    Type: String
+    Default: "Photo-album-CF"
+
+  S3GHBranch:
+    Type: String
+    Default: "front-end"
+
+  S3GHToken:
+    Type: String
+    Default: "abc"
+
+  S3GHUser:
+    Type: String
+    Default: "Yiping"
+
+Resources:
+  cf-AdminRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+                - codepipeline.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: admin
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  cf-S3ForArtifact:
+    Type: "AWS::S3::Bucket"
+
+  cf-hw3-website-host:
+    Type: "AWS::S3::Bucket"
+
+  LFPipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      RoleArn: !GetAtt cf-AdminRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref cf-S3ForArtifact
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                Repo: !Ref LFGHRepo
+                Branch: !Ref LFGHBranch
+                OAuthToken: !Ref LFGHToken
+                Owner: !Ref LFGHUser
+                PollForSourceChanges: "true"
+              OutputArtifacts:
+                - Name: SourceArtifact
+              InputArtifacts: []
+              Region: "us-east-1"
+              Namespace: SourceVariables
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ProjectName: "cf-Photo-album-build-project"
+              OutputArtifacts:
+                - Name: BuildArtifact
+              InputArtifacts:
+                - Name: SourceArtifact
+              Region: "us-east-1"
+              Namespace: BuildVariables
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
+                ChangeSetName: "CC-hw3changeset"
+                RoleArn: !GetAtt cf-AdminRole.Arn
+                StackName: "cf-substack-for-pipeline"
+                TemplatePath: BuildArtifact::outputsamtemplate.yml  
+              OutputArtifacts: []
+              InputArtifacts:
+                - Name: BuildArtifact
+              Region: us-east-1
+              Namespace: DeployVariables
+
+  S3Pipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      RoleArn: !GetAtt cf-AdminRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref cf-S3ForArtifact
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              Configuration:
+                Repo: !Ref S3GHRepo
+                Owner: !Ref S3GHUser
+                Branch: !Ref S3GHBranch
+                OAuthToken: !Ref S3GHToken
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              Configuration:
+                BucketName: !Ref cf-hw3-website-host
+                Extract: true
+              InputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+
