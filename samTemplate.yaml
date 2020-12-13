@@ -2,15 +2,15 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: CF pipeline content for lambda
 Resources:
-  cf-hw3-photo-bucket:
+  cfhw3photobucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: cf-hw3-photo-bucket
-  cf_search-photos:
+      BucketName: cfhw3photobucket
+  cfsearchphotos:
     Type: 'AWS::Serverless::Function'
     Properties:
-      FunctionName: cf_search-photos
-      Handler: cf_search-photos.lambda_handler
+      FunctionName: cfsearchphotos
+      Handler: cfsearchphotos.lambda_handler
       Runtime: python3.6
       CodeUri: ./lambda_functions
       Description: 'Lambda function 2 in hw3'
@@ -31,11 +31,11 @@ Resources:
           Properties:
             Path: /upload
             Method: put
-  cf_hw3_lf1:
+  cfhw3lf1:
     Type: 'AWS::Serverless::Function'
     Properties:
-      FunctionName: cf_hw3_lf1
-      Handler: cf_hw3_lf1.lambda_handler
+      FunctionName: cfhw3lf1
+      Handler: cfhw3lf1.lambda_handler
       Runtime: python3.6
       CodeUri: ./lambda_functions
       Description: 'Lambda function 1 in hw3'
@@ -47,7 +47,7 @@ Resources:
           Type: S3
           Properties:
             Bucket:
-              Ref: cf-hw3-photo-bucket
+              Ref: cfhw3photobucket
             Events: s3:ObjectCreated:Put
       Environment:
         Variables:

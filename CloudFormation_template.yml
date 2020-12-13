@@ -57,10 +57,10 @@ Resources:
                 Action: "*"
                 Resource: "*"
 
-  cf-S3ForArtifact:
+  cfS3ForArtifact:
     Type: "AWS::S3::Bucket"
 
-  cf-hw3-website-host:
+  cfS3Frontend:
     Type: "AWS::S3::Bucket"
 
   LFPipeline:
@@ -69,7 +69,7 @@ Resources:
       RoleArn: !GetAtt cfAdminRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Ref cf-S3ForArtifact
+        Location: !Ref cfS3ForArtifact
       Stages:
         - Name: Source
           Actions:
@@ -136,7 +136,7 @@ Resources:
       RoleArn: !GetAtt cfAdminRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Ref cf-S3ForArtifact
+        Location: !Ref cfS3ForArtifact
       Stages:
         - Name: Source
           Actions:
@@ -165,7 +165,7 @@ Resources:
                 Version: 1
                 Provider: S3
               Configuration:
-                BucketName: !Ref cf-hw3-website-host
+                BucketName: !Ref cfS3Frontend
                 Extract: true
               InputArtifacts:
                 - Name: SourceArtifact
